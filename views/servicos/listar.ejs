@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Lista de Servicos</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/public/listagens.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+   <div class="container col-12 col-sm-11 col-md-10 py-4">
+    <h1 class="text-center mb-4">Lista de Serviços</h1>
+     <!-- ========== SEARCH ========== -->
+    <form method="GET" class="d-flex mb-3">
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Buscar por mecânico, cliente, veículo, descrição..."
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+      >
+      <button class="btn btn-primary ms-2">Buscar</button>
+    </form>
+
+     <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Mecanico</th>
+                <th>Veiculo</th>
+                <th>Cliente</th>
+                <th>Nome da Peça</th>
+                <th>Nome do Serviço</th>
+                <th>Descrição</th>
+                <th>Status</th>
+                <th>Ordem de Serviço</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- <% servicos.forEach(servico => { %> -->
+                <tr>
+                    <td><%= servico.Mecanico.nome%></td>
+                    <td><%= servico.Veiculo.modelo %></td>
+                    <td><%= servico.Veiculo.Cliente.nome %></td>
+                    <td><%= servico.Peca ? servico.Peca.nome : "Nao Utilizado" %></td>
+                    <td><%= servico.Catalogo.nome%></td>
+                    <td><%= servico.descricao %></td>
+                    <td><%= servico.status %></td>
+                    <td class="d-flex flex-column gap-1">
+
+                        <a href="/gerente/servico/pdf/<%= servico.id %>?tipo=completo" 
+                        target="_blank" 
+                        class="btn btn-danger btn-sm">PDF Completo</a>
+                        <br>
+                        <a href="/gerente/servico/pdf/<%= servico.id %>?tipo=financeiro" 
+                        target="_blank" 
+                        class="btn btn-primary btn-sm">PDF Financeiro</a>
+                        <br>
+                    </td>
+                </tr>
+             <!-- <% }); %> -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ========== PAGINAÇÃO ========== -->
+    <div class="d-flex justify-content-center mt-3">
+      <nav aria-label="Paginação">
+        <ul class="pagination">
+
+          <% (typeof page === 'undefined') ? page = 1 : null; %>
+          <% (typeof totalPages === 'undefined') ? totalPages = 1 : null; %>
+
+          <% if (page > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= page - 1 %>&search=<%= encodeURIComponent(search || '') %>">Anterior</a>
+            </li>
+          <% } %>
+
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <li class="page-item <%= p === page ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= p %>&search=<%= encodeURIComponent(search || '') %>"><%= p %></a>
+            </li>
+          <% } %>
+
+          <% if (page < totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= page + 1 %>&search=<%= encodeURIComponent(search || '') %>">Próximo</a>
+            </li>
+          <% } %>
+
+        </ul>
+      </nav>
+    </div>
+
+    <br><br>
+  <!-- Ativar Tooltips -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+
+<style>
+    /* Estilo dos blocos quadrados */
+    .report-box {
+        border: 3px solid #000;
+        padding: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 5px;
+    }
+    .report-box:hover {
+        background: #f3f3f3;
+        transform: scale(1.03);
+    }
+
+    .report-icon {
+        font-size: 45px;
+        margin-bottom: 10px;
+    }
+
+    .report-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container mt-5">
+
+    <h3 class="text-center mb-4">Relatórios Gerais</h3>
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- Relatório Completo -->
+        <div class="col-md-3">
+            <a href="/gerente/fechamento-geral?tipo=completo"
+               class="text-dark text-decoration-none"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               title="Relatório mais detalhado: inclui mecânicos, serviços, valores e peças usadas.">
+                <div class="report-box">
+                    <div class="report-icon">📄</div>
+                    <div class="report-title">Relatório Completo</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Por Mecânico -->
+        <div class="col-md-3">
+            <a href="/gerente/fechamento-geral?tipo=por-mecanico"
+               class="text-dark text-decoration-none"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               title="Agrupa todos os trabalhos finalizados por cada mecânico. Útil para acompanhar produtividade.">
+
+                <div class="report-box">
+                    <div class="report-icon">👨‍🔧</div>
+                    <div class="report-title">Por Mecânico</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Relatório Simples -->
+        <div class="col-md-3">
+            <a href="/gerente/fechamento-geral?tipo=simples"
+               class="text-dark text-decoration-none"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               title="Versão reduzida com informações essenciais apenas.">
+
+                <div class="report-box">
+                    <div class="report-icon">📑</div>
+                    <div class="report-title">Relatório Simples</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Financeiro -->
+        <div class="col-md-3">
+            <a href="/gerente/fechamento-geral?tipo=financeiro"
+               class="text-dark text-decoration-none"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               title="Resumo financeiro: valores recebidos, pagamentos e totais.">
+
+                <div class="report-box">
+                    <div class="report-icon">💰</div>
+                    <div class="report-title">Financeiro</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Resumo Geral -->
+        <div class="col-md-3">
+            <a href="/gerente/fechamento-geral?tipo=resumo-geral"
+               class="text-dark text-decoration-none"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               title="Resumo geral das ordens de serviço finalizadas no período.">
+<br><br>
+
+                <div class="report-box">
+                    <div class="report-icon">📊</div>
+                    <div class="report-title">Resumo Geral</div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+    <br><br>
+    <div class="d-flex justify-content-center">
+        <a href="/gerente/painelGerente" class="btn btn-danger">Voltar</a>
+    </div>
+
+    <!-- Modal de filtro de datas -->
+<div class="modal fade" id="modalFiltroDatas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Filtrar Serviços por Data</h5>
+      </div>
+
+      <div class="modal-body">
+        <label>Data Inicial:</label>
+        <input type="date" id="dataInicio" class="form-control mb-3">
+
+        <label>Data Final:</label>
+        <input type="date" id="dataFim" class="form-control">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmarFiltro">Gerar Relatório</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+</body>
+
+
+<!-- Modal Deletar-->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center;">
+    <div style="background: #fff; padding: 20px; border-radius: 8px; width: 300px; text-align: center;">
+        <h3>Confirmar fim de servico?</h3>
+        <p>Tem certeza que deseja finalizar este servico?</p>
+        <form id="editForm" method="POST" style="margin-top: 20px;">
+            <input type="hidden" name="_method" value="PATCH">
+            <button type="submit" style="margin-right: 10px;">Sim</button>
+            <button type="button" onclick="closeModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+</html>
+
+
+
+<script>
+    const openModal = (servicoId) => {
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        editForm.action = `/mecanico/servico/listarServicos/FinalizarServico/${servicoId}?_method=PATCH`;        
+        editModal.style.display = 'flex';
+    };
+
+    const closeModal = () => {
+        const editModal = document.getElementById('editModal');
+        editModal.style.display = 'none';
+    };
+
+  let tipoRelatorioSelecionado = null;
+
+  // Quando clicar em qualquer botão de relatório
+  document.querySelectorAll("a[href^='/gerente/fechamento-geral']").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.preventDefault(); // impede abrir PDF imediatamente
+
+      const url = new URL(btn.href, window.location.origin);
+      tipoRelatorioSelecionado = url.searchParams.get("tipo");
+
+      // Abre o modal
+      const modal = new bootstrap.Modal(document.getElementById("modalFiltroDatas"));
+      modal.show();
+    });
+  });
+
+  document.getElementById("btnConfirmarFiltro").addEventListener("click", () => {
+    const inicio = document.getElementById("dataInicio").value;
+    const fim = document.getElementById("dataFim").value;
+
+    if (!inicio || !fim) {
+      alert("Selecione a data inicial e final.");
+      return;
+    }
+
+    // Monta a URL do relatório com filtros
+    const url = `/gerente/fechamento-geral?tipo=${tipoRelatorioSelecionado}&dataInicio=${inicio}&dataFim=${fim}`;
+
+    // Abre o PDF
+    window.open(url, "_blank");
+
+    // Fecha modal
+    bootstrap.Modal.getInstance(document.getElementById("modalFiltroDatas")).hide();
+  });
+
+</script>
