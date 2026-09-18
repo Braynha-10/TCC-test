@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
         nome: DataTypes.STRING,
         descricao: DataTypes.STRING,
         preco: DataTypes.DECIMAL
-    }, {});
+    }, {        tableName: 'catalogos',});
     return Catalogo;
 };
  

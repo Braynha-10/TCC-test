@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         telefone: DataTypes.STRING,
         email: DataTypes.STRING,
         endereco: DataTypes.STRING
-    }, {});
+    }, {tableName: 'clientes',});
 
     Cliente.associate = function(models) {
         Cliente.hasMany(models.Pagamento, { foreignKey: 'id_cliente' });

@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.ENUM('PENDENTE', 'APROVADO', 'RECUSADO'),
             defaultValue: 'PENDENTE'
         }
-    }, {});
+    }, { tableName: 'solicitacoes_servicos' });
         Solicitacoes_servico.associate = function(models) {
         Solicitacoes_servico.belongsTo(models.Mecanico, { foreignKey: 'id_mecanico' });
         // Solicitacoes_servico.belongsTo(models.Cliente, { foreignKey: 'id_cliente' });

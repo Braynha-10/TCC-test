@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         id_cliente: DataTypes.INTEGER,
         // id_servico: DataTypes.INTEGER, 
         status: DataTypes.BOOLEAN
-    }, {});
+    }, { tableName: 'pagamentos' });
 
     Pagamento.associate = function(models) {
         Pagamento.belongsTo(models.Cliente, {foreignKey: 'id_cliente'})

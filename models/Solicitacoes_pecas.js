@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.ENUM('pendente', 'aprovado', 'recusado'),
             defaultValue: 'pendente'
         }
-    }, {});
+    }, { tableName: 'solicitacoes_pecas' });
         Solicitacoes_peca.associate = function(models) {
         Solicitacoes_peca.belongsTo(models.Mecanico, { foreignKey: 'id_mecanico' });
     };

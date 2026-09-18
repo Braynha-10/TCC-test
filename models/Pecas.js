@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
         nome: DataTypes.STRING,
         descricao: DataTypes.STRING,
         preco: DataTypes.DOUBLE
-    }, {});
+    }, { tableName: 'pecas' });
     Peca.associate = function (models) {
         Peca.hasOne(models.Estoque, { foreignKey: "produtoId" });
     };
