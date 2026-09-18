@@ -12,6 +12,8 @@ const { sequelize } = require("./models");
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Traduzir os dados do corpo da requisição para variáveis
 app.use(express.urlencoded({ extended: true }));
 
