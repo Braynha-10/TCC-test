@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
         salario: DataTypes.DOUBLE,
         comissao: DataTypes.DOUBLE
     }, {
+        tableName: 'mecanicos',
+
         hooks: {
             beforeCreate: async (Mecanico) => {
                 if (Mecanico.senha) {
