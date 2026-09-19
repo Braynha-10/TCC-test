@@ -50,6 +50,27 @@ h1 {
     text-decoration: none; /* Remove sublinhado */
   }
 
+.painel-menu {
+  width: 100%;
+}
+
+.secao {
+  width: 100%;
+}
+
+.secao p {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 1rem;
+}
+
+.secao .botao4 {
+  display: block;
+  width: min(100%, 560px);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
   @media (max-width: 576px) {
     .container {
       width: calc(100% - 1rem);
@@ -64,5 +85,15 @@ h1 {
     .botao, .btn {
       max-width: 100%;
       white-space: normal;
+    }
+
+    .secao {
+      padding: 0;
+    }
+
+    .secao .botao4 {
+      width: 100%;
+      font-size: 1rem;
+      line-height: 1.3;
     }
   }
