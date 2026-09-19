@@ -1,5 +1,20 @@
 body{
     background-image: url("../public/imgs/fundo1.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 1rem;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.row {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .bloco{
@@ -7,6 +22,7 @@ body{
     border-radius: 10px;
     padding: 10px;
     margin: 10px;
+    width: min(100%, 720px);
 }
 
 .botao {
@@ -35,4 +51,23 @@ body{
     color: #000000; /* Cor do texto */
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra reduzida */
     text-decoration: none; /* Remove sublinhado */
+  }
+
+  @media (max-width: 576px) {
+    .bloco {
+      margin: 0;
+      padding: 1.25rem;
+    }
+
+    .bloco h1 {
+      font-size: 1.7rem;
+      overflow-wrap: anywhere;
+    }
+
+    .bloco .botao {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+      text-align: center;
+    }
   }

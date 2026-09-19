@@ -1,8 +1,28 @@
 body {
-    background-color: #838383be; /* Fundo  */
+  background-color: #838383be;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, svg, video {
+  max-width: 100%;
+}
+
+form {
+  width: 100%;
+}
+
+input, select, textarea, button {
+  max-width: 100%;
+}
+
 .container {
-    margin-top: 50px;
+  width: min(100% - 2rem, 1140px);
+  margin: 50px auto 24px;
     padding: 20px;
     background: white;
     border-radius: 8px;
@@ -24,7 +44,7 @@ label {
     display: inline-block; /* Permite ajustar padding e dimensões */
     color: #272626; /* Cor do texto */
     padding: 10px 20px; /* Espaçamento interno do botão */
-    font-size: 28px; /* Tamanho da fonte */
+    font-size: 1rem;
     background-color: #677288; /* Cor do fundo (azul) */
     text-decoration: none; /* Remove o sublinhado do link */
     border: none; /* Remove borda padrão */
@@ -136,4 +156,48 @@ label {
     color: hsl(0, 0%, 100%); /* Cor do texto */
     font-size: 24px; /* Tamanho da fonte */
     font-weight: bold;
+  }
+
+  @media (max-width: 576px) {
+    .vh-100 {
+      height: auto !important;
+      min-height: 100vh;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .container {
+      width: calc(100% - 1rem);
+      margin-top: 1rem;
+      padding: 1rem;
+    }
+
+    h1, h2 {
+      font-size: 1.5rem;
+    }
+
+    .botao, .botao2, .botao3, .botao4 {
+      width: 100%;
+      max-width: 100%;
+      font-size: 1rem;
+      margin: 0.25rem 0;
+      white-space: normal;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .btn-group .botao4,
+    .btn-group button[style] {
+      margin-left: 0 !important;
+    }
+
+    .d-flex.justify-content-between,
+    .d-flex.justify-content-end {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
   }
