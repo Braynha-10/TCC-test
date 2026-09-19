@@ -38,6 +38,10 @@ table {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
+.table-responsive table {
+  min-width: 680px;
+}
+
 thead tr {
   background-color: #003598;
   color: #ffffff;
@@ -119,9 +123,6 @@ tbody tr:hover {
   table {
     margin-top: 1rem;
     font-size: 0.85rem;
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
   }
 
   th, td {

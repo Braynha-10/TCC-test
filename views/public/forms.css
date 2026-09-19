@@ -20,6 +20,16 @@ input, select, textarea, button {
   max-width: 100%;
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  min-width: 640px;
+}
+
 .container {
   width: min(100% - 2rem, 1140px);
   margin: 50px auto 24px;
@@ -199,5 +209,10 @@ label {
     .d-flex.justify-content-end {
       flex-wrap: wrap;
       gap: 0.5rem;
+    }
+
+    .d-flex.justify-content-between > div,
+    .d-flex.justify-content-between .btn {
+      max-width: 100%;
     }
   }

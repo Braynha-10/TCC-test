@@ -39,34 +39,36 @@
                 <!-- Lista de peças (form existente) -->
                 <form id="formExistente" class="">
                     <label for="catalogo">Catálogo de Peças:</label>
-                    <table class="table table-striped">
+                    <div class="table-responsive">
+                      <table class="table table-striped">
                         <thead>
-                            <tr>
-                                <th>Selecionar</th>
-                                <th>Id</th>
-                                <th>Nome</th>
-                                <th>Preço</th>
-                                <th>Estoque</th>
-                                <th>Qtd solic.d</th>
-                            </tr>
+                          <tr>
+                            <th>Selecionar</th>
+                            <th>Id</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                            <th>Qtd solic.d</th>
+                          </tr>
                         </thead>
                         <tbody>
-                            <% pecas.forEach(peca => { %>
-                                <tr>
-                                    <td>
-                                      <input type="radio" name="pecaId" value="<%= peca.id %>" />
-                                    </td>
-                                    <td><%= peca.id %></td>
-                                    <td><%= peca.nome %></td>
-                                    <td>R$ <%= (peca.preco || 0).toFixed(2) %></td>
-                                    <td><%= peca?.Estoque?.quantidade || 0 %></td>
-                                    <td>
-                                      <input class="form-control quantidade-input" type="number" name="quantidade" min="1" value="1" style="width:100px"/>
-                                    </td>
-                                </tr>
-                            <% }); %>
+                          <% pecas.forEach(peca => { %>
+                            <tr>
+                              <td>
+                              <input type="radio" name="pecaId" value="<%= peca.id %>" />
+                              </td>
+                              <td><%= peca.id %></td>
+                              <td><%= peca.nome %></td>
+                              <td>R$ <%= (peca.preco || 0).toFixed(2) %></td>
+                              <td><%= peca?.Estoque?.quantidade || 0 %></td>
+                              <td>
+                              <input class="form-control quantidade-input" type="number" name="quantidade" min="1" value="1" />
+                              </td>
+                            </tr>
+                          <% }); %>
                         </tbody>
-                    </table>
+                      </table>
+                    </div>
 
                     <div class="d-flex justify-content-between">
                       <div>

@@ -134,9 +134,14 @@
     </ul>
   </nav>
 
-  <div class="d-flex justify-content-center mt-3">
-    <a href="/gerente/painelGerente" class="btn btn-danger">Voltar</a>
-  </div>
+  <br><br>
+    <div class="d-flex justify-content-center">
+        <% if (typeof mecanico !== 'undefined' && mecanico) { %>
+            <a href="/mecanico/painelMecanico" class="btn btn-danger">Voltar</a>
+        <% } else { %>
+            <a href="/gerente/painelGerente" class="btn btn-danger">Voltar</a>
+        <% } %>
+    </div>
 </div>
 
 <!-- ================= MODAL ================= -->
