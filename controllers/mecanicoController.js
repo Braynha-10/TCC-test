@@ -1,5 +1,6 @@
 const { Sequelize, Veiculo, Cliente, Pagamento, Servico, Mecanico, Catalogo, Peca, Solicitacoes_servico, Solicitacoes_peca, Estoque } = require('../models'); // Importação dos modelos de dados
 const { Op } = require('sequelize');
+const { setAlert } = require('../utils/alerts');
 // Veiculos --------------------------------------------------------------------------------------------------------------------------------------
 
 exports.homeVeiculo = async(req, res) => {
@@ -76,10 +77,12 @@ exports.cadastroVeiculo = async(req, res) => {
         const mecanico = req.session.mecanico;
         // Salvar no banco de dados
         await Veiculo.create({  modelo, marca, ano, id_cliente });
+        setAlert(req, res, 'success', 'Veículo cadastrado', 'O veículo foi cadastrado com sucesso.');
         res.render('mecanico/painelMecanico', {mecanico});  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao cadastrar Veiculo:', error);
-        res.status(500).send('Erro ao cadastrar veiculo');
+        setAlert(req, res, 'error', 'Não foi possível cadastrar o veículo', 'Confira os dados e tente novamente.');
+        res.status(500).render('mecanico/painelMecanico', {mecanico: req.session.mecanico});
     }
 };
 
@@ -126,10 +129,12 @@ exports.atualizandoVeiculo = async(req, res) => {
         // Recupere os dados do mecânico da sessão
         const mecanico = req.session.mecanico;
         await Veiculo.update({ modelo, marca, ano, id_cliente }, { where: { id } });
+        setAlert(req, res, 'success', 'Veículo atualizado', 'As informações do veículo foram atualizadas.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao atualizar Veiculo:', error);
-        res.status(500).send('Erro ao atualizar veículo');
+        setAlert(req, res, 'error', 'Não foi possível atualizar o veículo', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 };
 
@@ -139,10 +144,12 @@ exports.deletaVeiculo = async(req, res) => {
     try {
         const mecanico = req.session.mecanico;
         await Veiculo.destroy({ where: { id } });
+        setAlert(req, res, 'success', 'Veículo excluído', 'O veículo foi removido com sucesso.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao deletar Veiculo:', error);
-        res.status(500).send('Erro ao deletar veículo');
+        setAlert(req, res, 'error', 'Não foi possível excluir o veículo', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 };
 
@@ -204,10 +211,12 @@ exports.cadastroCliente = async(req, res) => {
         const mecanico = req.session.mecanico;
         // Salvar no banco de dados
         await Cliente.create({  nome, telefone, email, endereco  });
+        setAlert(req, res, 'success', 'Cliente cadastrado', 'O cliente foi cadastrado com sucesso.');
         res.render('mecanico/painelMecanico', {mecanico});  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao cadastrar Cliente:', error);
-        res.status(500).send('Erro ao cadastrar Cliente');
+        setAlert(req, res, 'error', 'Não foi possível cadastrar o cliente', 'Confira os dados e tente novamente.');
+        res.status(500).render('mecanico/painelMecanico', {mecanico});
     }
 }
 
@@ -229,10 +238,12 @@ exports.atualizandoCliente = async(req, res) => {
 
     try {
         await Cliente.update({ nome, telefone, email }, { where: { id } });
+        setAlert(req, res, 'success', 'Cliente atualizado', 'As informações do cliente foram atualizadas.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao atualizar Cliente:', error);
-        res.status(500).send('Erro ao atualizar cliente');
+        setAlert(req, res, 'error', 'Não foi possível atualizar o cliente', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 }
 
@@ -241,10 +252,12 @@ exports.deletaCliente = async(req, res) => {
 
     try {
         await Cliente.destroy({ where: { id } });
+        setAlert(req, res, 'success', 'Cliente excluído', 'O cliente foi removido com sucesso.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao deletar Cliente:', error);
-        res.status(500).send('Erro ao deletar cliente');
+        setAlert(req, res, 'error', 'Não foi possível excluir o cliente', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 }	
 
@@ -316,11 +329,13 @@ exports.finalizarServicosEmAndamento = async(req, res) => {
             return res.status(404).send('Servico nao encontrado!');
         }
         await servico.update({status: "Finalizado"})
+        setAlert(req, res, 'success', 'Serviço finalizado', 'O serviço foi marcado como finalizado.');
         res.redirect('/mecanico/servico/listarServicos')
     } catch (error) {
     
         console.error('Erro ao atualizar Servico: ', error);
-        res.status(500).json({ error: 'Erro ao atualizar Servico' });
+        setAlert(req, res, 'error', 'Não foi possível finalizar o serviço', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/servico/listarServicos');
      
     }
 }
@@ -458,10 +473,12 @@ exports.solicitarServico = async(req, res) => {
             descricao,
             status: 'PENDENTE' // Sempre começa como pendente
         });
+        setAlert(req, res, 'success', 'Solicitação enviada', 'A solicitação de serviço foi registrada com sucesso.');
         res.render('mecanico/painelMecanico', {mecanico}); // Redireciona para a listagem
     } catch (error) {
         console.error(error);
-        res.status(500).send('Erro ao criar a solicitação de serviço');
+        setAlert(req, res, 'error', 'Não foi possível solicitar o serviço', 'Confira os dados e tente novamente.');
+        res.status(500).render('mecanico/painelMecanico', {mecanico});
     }
 }
 
@@ -518,10 +535,12 @@ exports.solicitarPeca = async(req, res) => {
             quantidade,
             status: 'PENDENTE' // Sempre começa como pendente
         });
+        setAlert(req, res, 'success', 'Solicitação enviada', 'A solicitação de peça foi registrada com sucesso.');
         res.render('mecanico/painelMecanico', {mecanico}); // Redireciona para a listagem
     } catch (error) {
         console.error(error);
-        res.status(500).send('Erro ao criar a solicitação de peça');
+        setAlert(req, res, 'error', 'Não foi possível solicitar a peça', 'Confira os dados e tente novamente.');
+        res.status(500).render('mecanico/painelMecanico', {mecanico});
     }
 }
 

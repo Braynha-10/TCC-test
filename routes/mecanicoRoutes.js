@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const mecanicoController = require('../controllers/mecanicoController');
+const { setAlert } = require('../utils/alerts');
 // temporário: debug para ver o que está exportado
 console.log('mecanicoController keys:', Object.keys(mecanicoController));
 
@@ -200,10 +201,12 @@ router.patch('/servicos/:id', async (req, res) => {
 
     try {
         await Servico.update({ id_mecanico, id_veiculo, id_servico, id_peca, id_pagamento, descricao, status }, { where: { id } });
+        setAlert(req, res, 'success', 'Serviço atualizado', 'As informações do serviço foram atualizadas.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao atualizar Serviço:', error);
-        res.status(500).send('Erro ao atualizar serviço');
+        setAlert(req, res, 'error', 'Não foi possível atualizar o serviço', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 });
 
@@ -213,10 +216,12 @@ router.delete('/servicos/:id', async (req, res) => {
 
     try {
         await Servico.destroy({ where: { id } });
+        setAlert(req, res, 'success', 'Serviço excluído', 'O serviço foi removido com sucesso.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
     } catch (error) {
         console.error('Erro ao deletar Serviço:', error);
-        res.status(500).send('Erro ao deletar serviço');
+        setAlert(req, res, 'error', 'Não foi possível excluir o serviço', 'Tente novamente em instantes.');
+        res.redirect('/mecanico/painelMecanico');
     }
 });
 

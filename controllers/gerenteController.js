@@ -3,6 +3,7 @@ const { get } = require('../routes/gerenteRoutes');
 const { Op, Sequelize } = require("sequelize");
 const PDFDocument = require('pdfkit');
 const { listarSolitacoesPecas } = require('./mecanicoController');
+const { setAlert } = require('../utils/alerts');
 
 
 
@@ -75,10 +76,12 @@ const atualizarMecanico = async(req,res) => {
             Mecanico.create({nome, telefone, email, senha, salario, comissao, especialidade});
         }
         await mecanico.update({nome, telefone, email, senha, salario, comissao, especialidade});
+        setAlert(req, res, 'success', 'Mecânico atualizado', 'As informações do mecânico foram atualizadas.');
         res.redirect('/gerente/painelGerente');
     } catch (error){
         console.error('Erro ao atualizar mecânico: ', error);
-        res.status(500).json({ error: 'Erro ao atualizar mecânico' });
+        setAlert(req, res, 'error', 'Não foi possível atualizar o mecânico', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -86,10 +89,12 @@ const deletarMecanico = async (req, res) => {
     const {id} = req.params;
     try {
         Mecanico.destroy({where: {id: id}});
+        setAlert(req, res, 'success', 'Mecânico excluído', 'O mecânico foi removido com sucesso.');
         res.redirect('/gerente/painelGerente');
     } catch (error) { 
         console.error('Erro ao deletar mecanico: ', error);
-        res.status(500).json({error: 'Erro ao deletar mecanico'}); 
+        setAlert(req, res, 'error', 'Não foi possível excluir o mecânico', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -112,11 +117,13 @@ const cadastrarPeca = async (req, res) => {
             capacidade: Number(capacidade)
         });
 
+        setAlert(req, res, 'success', 'Peça cadastrada', 'A peça e seu estoque foram cadastrados com sucesso.');
         res.redirect("/gerente/pecas/listar");
 
     } catch (error) {
         console.error("Erro ao cadastrar peça:", error);
-        res.status(500).send("Erro ao cadastrar peça");
+        setAlert(req, res, 'error', 'Não foi possível cadastrar a peça', 'Confira os dados e tente novamente.');
+        res.redirect('/gerente/pecas/listar');
     }
 };
 
@@ -190,10 +197,12 @@ const modificaPeca = async(req,res) => {
             res.status(404).json({error: "peca nao encontrada!"})
         }
         await peca.update({nome, descricao, preco});
+        setAlert(req, res, 'success', 'Peça atualizada', 'As informações da peça foram atualizadas.');
         res.redirect('/gerente/painelGerente');
     } catch (error){
         console.error('Erro ao atualizar peca: ', error);
-        res.status(500).json({ error: 'Erro ao atualizar peca' });
+        setAlert(req, res, 'error', 'Não foi possível atualizar a peça', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -201,10 +210,12 @@ const deletarPeca = async (req, res) => {
     const {id} = req.params;
     try {
         Peca.destroy({where: {id: id}});
+        setAlert(req, res, 'success', 'Peça excluída', 'A peça foi removida com sucesso.');
         res.redirect('/gerente/painelGerente');
     } catch (error) { 
         console.error('Erro ao deletar peca: ', error);
-        res.status(500).json({error: 'Erro ao deletar peca'}); 
+        setAlert(req, res, 'error', 'Não foi possível excluir a peça', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -572,13 +583,16 @@ const cadastrarGerente = async (req, res) => {
         const user = await Gerente.findOne({where: {email:email}});
         if(!user){
             await Gerente.create({nome, telefone, email, salario, senha});
+            setAlert(req, res, 'success', 'Gerente cadastrado', 'O gerente foi cadastrado com sucesso.');
             res.redirect('/gerente/painelGerente');
         } else {
-            res.send("<h1>Gerente ja cadastrado com esse email!</h1>")
+            setAlert(req, res, 'error', 'Gerente já cadastrado', 'Já existe um gerente com esse e-mail.');
+            res.redirect('/gerente/gerentes/cadastro');
         }
     } catch (error){
         console.error('Erro ao cadastrar gerente: ', error);
-        res.status(500).json({error: 'Erro ao cadastrar gerente'})
+        setAlert(req, res, 'error', 'Não foi possível cadastrar o gerente', 'Confira os dados e tente novamente.');
+        res.redirect('/gerente/gerentes/cadastro');
     }
 }
 
@@ -586,10 +600,12 @@ const deletarGerente = async (req, res) => {
     const {id} = req.params;
     try{
         Gerente.destroy({where: {id: id}})
+        setAlert(req, res, 'success', 'Gerente excluído', 'O gerente foi removido com sucesso.');
         res.redirect('/gerente/painelGerente');
     } catch (error) { 
         console.error('Erro ao deletar gerente: ', error);
-        res.status(500).json({error: 'Erro ao deletar gerente'}); 
+        setAlert(req, res, 'error', 'Não foi possível excluir o gerente', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -603,10 +619,12 @@ const atualizarGerente = async(req,res) => {
             res.status(404).json({error: "Gerente nao encontrado!"})
         }
         await gerente.update({nome, telefone, email, senha, salario});
+        setAlert(req, res, 'success', 'Gerente atualizado', 'As informações do gerente foram atualizadas.');
         res.redirect('/gerente/painelGerente');
     } catch (error){
         console.error('Erro ao atualizar gerente: ', error);
-        res.status(500).json({ error: 'Erro ao atualizar gerente' });
+        setAlert(req, res, 'error', 'Não foi possível atualizar o gerente', 'Tente novamente em instantes.');
+        res.redirect('/gerente/painelGerente');
     }
 }
 
@@ -732,6 +750,7 @@ const processarSolicitacaoPeca = async (req, res) => {
     if (status === "RECUSADO") {
       solicitacao.status = "RECUSADO";
       await solicitacao.save();
+            setAlert(req, res, 'success', 'Solicitação recusada', 'A solicitação de peça foi recusada.');
       return res.redirect("/gerente/pecas/solicitacoes");
     }
 
@@ -767,12 +786,14 @@ const processarSolicitacaoPeca = async (req, res) => {
     solicitacao.status = "APROVADO";
     solicitacao.quantidade = quantidade;
     await solicitacao.save();
+    setAlert(req, res, 'success', 'Solicitação aprovada', 'A solicitação de peça foi aprovada e o estoque foi atualizado.');
 
     return res.redirect("/gerente/pecas/solicitacoes");
 
   } catch (error) {
     console.error("Erro:", error.message);
-    return res.status(500).send(error.message);
+        setAlert(req, res, 'error', 'Não foi possível processar a solicitação', 'Tente novamente em instantes.');
+        return res.redirect("/gerente/pecas/solicitacoes");
   }
 };
 
@@ -940,6 +961,7 @@ const processarSolicitacaoServicos = async (req, res) => {
       if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.json({ ok: true, message: 'Solicitação aprovada', novoServicoId: novoServico.id });
       } else {
+                setAlert(req, res, 'success', 'Solicitação aprovada', 'A solicitação de serviço foi aprovada.');
         return res.redirect('/gerente/servicos/solicitacoes');
       }
     } else {
@@ -951,6 +973,7 @@ const processarSolicitacaoServicos = async (req, res) => {
       if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.json({ ok: true, message: 'Solicitação recusada' });
       } else {
+                setAlert(req, res, 'success', 'Solicitação recusada', 'A solicitação de serviço foi recusada.');
         return res.redirect('/gerente/servicos/solicitacoes');
       }
     }
@@ -961,7 +984,8 @@ const processarSolicitacaoServicos = async (req, res) => {
     if (req.xhr || req.headers.accept?.includes('application/json')) {
       return res.status(500).json({ ok: false, message: error.message || 'Erro interno' });
     }
-    return res.status(500).send('Erro interno: ' + (error.message || ''));
+    setAlert(req, res, 'error', 'Não foi possível processar a solicitação', 'Tente novamente em instantes.');
+    return res.redirect('/gerente/servicos/solicitacoes');
   }
 };
 

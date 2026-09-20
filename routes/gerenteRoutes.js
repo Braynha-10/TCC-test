@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const {authMiddlewareGerente} = require('../middlewares/authMiddleware');
 const { Mecanico, Solicitacoes_peca, Gerente, Peca } = require('../models');
 const gerenteController = require('../controllers/gerenteController');
+const { setAlert } = require('../utils/alerts');
 
 // router.get('/', authMiddleware, (req, res) => {
 //     if (req.user.userType !== 'gerente') {
@@ -90,9 +91,11 @@ router.post('/mecanico/cadastro', async (req,res) => {
 
     if(!user){
         await Mecanico.create({nome, email, telefone, senha, especialidade, salario, comissao})
+        setAlert(req, res, 'success', 'Mecânico cadastrado', 'O mecânico foi cadastrado com sucesso.');
         res.redirect('/gerente/painelGerente');
     } else {
-        res.send('<h1>Ja existe um usuario com este email<h1>'); //deixar como unique
+        setAlert(req, res, 'error', 'Mecânico já cadastrado', 'Já existe um mecânico com esse e-mail.');
+        res.redirect('/gerente/mecanico/cadastro');
     }
 
 })
