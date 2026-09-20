@@ -1,4 +1,4 @@
-const { Sequelize, Veiculo, Cliente, Pagamento, Servico, Mecanico, Catalogo, Peca, Solicitacoes_servico, Solicitacoes_peca, Estoque } = require('../models'); // Importação dos modelos de dados
+const { Sequelize, sequelize, Veiculo, Cliente, Pagamento, Servico, Mecanico, Catalogo, Peca, Solicitacoes_servico, Solicitacoes_peca, Estoque } = require('../models'); // Importação dos modelos de dados
 const { Op } = require('sequelize');
 const { setAlert } = require('../utils/alerts');
 // Veiculos --------------------------------------------------------------------------------------------------------------------------------------
