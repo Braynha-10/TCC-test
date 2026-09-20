@@ -31,6 +31,7 @@
                         <th>Veículo</th>
                         <th>Cliente</th>
                         <th>Peça</th>
+                        <th>quantidade</th>
                         <th>Tipo Pagto</th>
                         <th>Desconto</th>
                         <th>Serviço</th>
@@ -48,6 +49,7 @@
                             <td><%= servico.Veiculo ? servico.Veiculo.modelo : '' %></td>
                             <td><%= servico.Veiculo && servico.Veiculo.Cliente ? servico.Veiculo.Cliente.nome : '' %></td>
                             <td><%= servico.Peca ? servico.Peca.nome : '' %></td>
+                            <td><%= servico.quantidade || 1 %></td>
                             <td>
                                 <% if (servico.tipo_pagamento == 0) { %>
                                     Crédito

@@ -460,8 +460,14 @@ exports.listandoSolicitacoesServicos = async (req, res, id) => {
 
 // Solicitação de Serviço
 exports.solicitarServico = async(req, res) => {
-    const { id_mecanico, id_catalogo, id_veiculo, id_peca, pagamento, desconto, descricao } = req.body;
+    const { id_mecanico, id_catalogo, id_veiculo, id_peca, pagamento, desconto, descricao, quantidade } = req.body;
     const mecanico = req.session.mecanico; // Assume que o usuário está autenticado
+    const quantidadeNumerica = Number(quantidade);
+
+    if (!Number.isInteger(quantidadeNumerica) || quantidadeNumerica < 1) {
+        return res.status(400).send('Quantidade inválida');
+    }
+
     try {
         await Solicitacoes_servico.create({
             id_mecanico,
@@ -471,6 +477,7 @@ exports.solicitarServico = async(req, res) => {
             tipo_pagamento: pagamento,
             desconto,
             descricao,
+            quantidade: quantidadeNumerica, 
             status: 'PENDENTE' // Sempre começa como pendente
         });
         setAlert(req, res, 'success', 'Solicitação enviada', 'A solicitação de serviço foi registrada com sucesso.');

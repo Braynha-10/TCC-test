@@ -33,6 +33,7 @@
                 <th>Veiculo</th>
                 <th>Cliente</th>
                 <th>Nome da Peça</th>
+                <th>Quantidade</th>
                 <th>Nome do Serviço</th>
                 <th>Descrição</th>
                 <th>Status</th>
@@ -46,6 +47,7 @@
                     <td><%= servico.Veiculo.modelo %></td>
                     <td><%= servico.Veiculo.Cliente.nome %></td>
                     <td><%= servico.Peca ? servico.Peca.nome : "Nao Utilizado" %></td>
+                    <td><%= servico.quantidade || 1 %></td>
                     <td><%= servico.Catalogo.nome%></td>
                     <td><%= servico.descricao %></td>
                     <td><%= servico.status %></td>

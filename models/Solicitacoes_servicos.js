@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.ENUM('PENDENTE', 'APROVADO', 'RECUSADO'),
             defaultValue: 'PENDENTE'
+        },
+        quantidade: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1
         }
     }, { tableName: 'solicitacoes_servicos' });
         Solicitacoes_servico.associate = function(models) {

@@ -355,6 +355,7 @@ const ordemServico = async (req, res) => {
 
             doc.fontSize(12).text(`Serviço: ${servico.Catalogo.nome}`);
             doc.text(`Peça Utilizada: ${servico.Peca ? servico.Peca.nome : "Nenhuma peça registrada"}`);
+            doc.text(`Quantidade: ${servico.quantidade || 1}`);
             doc.moveDown();
         }
 
@@ -902,10 +903,12 @@ const processarSolicitacaoServicos = async (req, res) => {
       }
       return res.status(404).send('Solicitação de Serviço não encontrada');
     }
-
+    
+    const quantidadeSolicitada = solicitacaoServico.quantidade || 1;
+    
     if (status === 'APROVADO' || status === 'APROVA' || status === 'APROVAR') {
       // cria pagamento e servico dentro da transaction
-      const valorPeca = solicitacaoServico.Peca ? parseFloat(solicitacaoServico.Peca.preco || 0) : 0;
+      const valorPeca = solicitacaoServico.Peca ? parseFloat(solicitacaoServico.Peca.preco || 0) * quantidadeSolicitada : 0;
       const valorServico = solicitacaoServico.Catalogo ? parseFloat(solicitacaoServico.Catalogo.preco || 0) : 0;
       const total = valorPeca + valorServico;
 
@@ -922,6 +925,7 @@ const processarSolicitacaoServicos = async (req, res) => {
         id_veiculo: solicitacaoServico.id_veiculo,
         id_catalogo: solicitacaoServico.id_catalogo,
         id_peca: solicitacaoServico.id_peca || null,
+        quantidade: quantidadeSolicitada,
         id_pagamento: novoPagamento.id,
         descricao: solicitacaoServico.descricao,
         status: 'Pendente',
@@ -931,26 +935,21 @@ const processarSolicitacaoServicos = async (req, res) => {
       if (solicitacaoServico.id_peca) {
         const pecaEstoque = await Estoque.findOne({
           where: { produtoId: solicitacaoServico.id_peca },
-          transaction
+          transaction,
+          lock: transaction.LOCK.UPDATE
         });
 
         if (!pecaEstoque) {
-          await transaction.rollback();
-          if (req.xhr || req.headers.accept?.includes('application/json')) {
-            return res.status(404).json({ ok: false, message: 'Peça não encontrada no estoque' });
-          }
-          return res.status(404).send('Peça não encontrada no estoque');
+          throw new Error('Peça não encontrada no estoque');
         }
 
-        // assumo que existe método reduzirQuantidade que aceita transaction
-        if (typeof pecaEstoque.reduzirQuantidade === 'function') {
-          await pecaEstoque.reduzirQuantidade({ transaction });
-        } else {
-          // fallback simples: decrementar quantidade e salvar
-          pecaEstoque.quantidade = (pecaEstoque.quantidade || 0) - 1;
-          if (pecaEstoque.quantidade < 0) pecaEstoque.quantidade = 0;
-          await pecaEstoque.save({ transaction });
+        if (pecaEstoque.quantidade < quantidadeSolicitada) {
+          throw new Error('Quantidade insuficiente no estoque');
         }
+
+        pecaEstoque.quantidade -= quantidadeSolicitada;
+
+        await pecaEstoque.save({ transaction });
       }
 
       solicitacaoServico.status = 'APROVADO';

@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         id_pagamento: DataTypes.INTEGER,
         descricao: DataTypes.STRING,
         status: DataTypes.STRING,
+        quantidade: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1
+        }
     }, { tableName: 'servicos' });
     Servico.associate = function(models) {
         Servico.belongsTo(models.Mecanico, {foreignKey: 'id_mecanico'}),
@@ -23,4 +28,4 @@ module.exports = (sequelize, DataTypes) => {
     };
     return Servico;
 };
- 
+

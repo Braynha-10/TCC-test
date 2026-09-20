@@ -54,6 +54,19 @@
                                 </option>
                             <% }); %>
                         </select>
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade de peças a serem utilizadas:</label>
+                            <input
+                                type="number"
+                                name="quantidade"
+                                id="quantidade"
+                                class="form-control"
+                                min="1"
+                                value="1"
+                                required
+                                disabled
+                            >
+                        </div>
                     </div>
 
                     <!-- Seleção de pagamento -->
@@ -100,23 +113,39 @@
     <script>
         const formServico = document.getElementById('formServico');
         const selectPeca = document.getElementById('id_peca');
+        const inputQuantidade = document.getElementById('quantidade');
+
+        selectPeca.addEventListener('change', function () {
+            const pecaSelecionada = selectPeca.selectedOptions[0];
+            const quantidadeDisponivel = Number(
+                pecaSelecionada?.dataset.quantidade || 0
+            );
+
+            inputQuantidade.disabled = quantidadeDisponivel <= 0;
+            inputQuantidade.max = quantidadeDisponivel;
+            inputQuantidade.value = quantidadeDisponivel > 0 ? 1 : '';
+        });
 
         formServico.addEventListener('submit', function (event) {
-            const pecasDisponiveis = [...selectPeca.options].some(option => {
-                return option.dataset.quantidade > 0;
-            });
+            const pecaSelecionada = selectPeca.selectedOptions[0];
+            const quantidadeDisponivel = Number(
+                pecaSelecionada?.dataset.quantidade || 0
+            );
+            const quantidadeSolicitada = Number(inputQuantidade.value);
 
-            if (!pecasDisponiveis) {
+            if (quantidadeDisponivel <= 0) {
                 event.preventDefault();
                 alert('Não há peças disponíveis no estoque para solicitar.');
-                return;
             }
 
-            const pecaSelecionada = selectPeca.selectedOptions[0];
-
-            if (!pecaSelecionada || pecaSelecionada.dataset.quantidade <= 0) {
+            if (
+                quantidadeSolicitada < 1 ||
+                quantidadeSolicitada > quantidadeDisponivel
+            ) {
                 event.preventDefault();
-                alert('A peça selecionada não possui estoque disponível.');
+                alert(
+                    `A quantidade deve estar entre 1 e ${quantidadeDisponivel}.`
+                );
             }
         });
     </script>
