@@ -13,7 +13,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6 form-container">
                 <h1 class="text-center">Criar Solicitação de Serviço</h1>
-                <form action="/mecanico/servico" method="POST">
+                <form id="formServico" action="/mecanico/servico" method="POST">
                     <!-- Seleção do catálogo -->
                     <div class="form-group">
                         <label for="id_catalogo">Catálogo de Serviços:</label>
@@ -37,15 +37,25 @@
                     <!-- Seleção da Peça -->
                     <div class="form-group">
                         <label for="id_peca">Peças:</label>
+
                         <select name="id_peca" id="id_peca" class="form-control" required>
+                            <option value="">Selecione uma peça</option>
+
                             <% pecas.forEach(peca => { %>
-                                <option value="<%= peca.id %>">
-                                    <%= peca.nome %> - <%= peca?.Estoque?.quantidade %>/<%= peca?.Estoque?.capacidade %>
+                                <option
+                                    value="<%= peca.id %>"
+                                    data-quantidade="<%= peca.Estoque?.quantidade ?? 0 %>"
+                                    <% if ((peca.Estoque?.quantidade ?? 0) <= 0) { %>
+                                    disabled
+                                    <% } %>
+                                >
+                                    <%= peca.nome %> -
+                                    <%= peca.Estoque?.quantidade ?? 0 %>/<%= peca.Estoque?.capacidade ?? 0 %>
                                 </option>
                             <% }); %>
                         </select>
                     </div>
-                    <%= console.log(pecas[0]) %>
+
                     <!-- Seleção de pagamento -->
                     <div class="form-group">
                         <label for="pagamento">Pagamento:</label>
@@ -86,5 +96,30 @@
     <!-- Script do Bootstrap -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zyyH2fQw6O5f5hW81KHZ1PxI6W9G0P7PpUqF7/sJ" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0tX8a5r0C6QRSZhpAlQkHvc9JlX5yV9zGVXx3RfTlGVwD5Dk" crossorigin="anonymous"></script>
+
+    <script>
+        const formServico = document.getElementById('formServico');
+        const selectPeca = document.getElementById('id_peca');
+
+        formServico.addEventListener('submit', function (event) {
+            const pecasDisponiveis = [...selectPeca.options].some(option => {
+                return option.dataset.quantidade > 0;
+            });
+
+            if (!pecasDisponiveis) {
+                event.preventDefault();
+                alert('Não há peças disponíveis no estoque para solicitar.');
+                return;
+            }
+
+            const pecaSelecionada = selectPeca.selectedOptions[0];
+
+            if (!pecaSelecionada || pecaSelecionada.dataset.quantidade <= 0) {
+                event.preventDefault();
+                alert('A peça selecionada não possui estoque disponível.');
+            }
+        });
+    </script>
+
 </body>
 </html>
