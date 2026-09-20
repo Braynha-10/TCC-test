@@ -56,12 +56,14 @@
                         </select>
                         <div class="form-group">
                             <label for="quantidade">Quantidade de peças a serem utilizadas:</label>
+                            <small id="estoqueDisponivel" class="form-text text-muted">Selecione uma peça para consultar o estoque.</small>
                             <input
                                 type="number"
                                 name="quantidade"
                                 id="quantidade"
                                 class="form-control"
                                 min="1"
+                                step="1"
                                 value="1"
                                 required
                                 disabled
@@ -124,6 +126,16 @@
             inputQuantidade.disabled = quantidadeDisponivel <= 0;
             inputQuantidade.max = quantidadeDisponivel;
             inputQuantidade.value = quantidadeDisponivel > 0 ? 1 : '';
+            document.getElementById('estoqueDisponivel').textContent = quantidadeDisponivel > 0
+                ? `Disponível no estoque: ${quantidadeDisponivel} unidade(s).`
+                : 'Esta peça não possui unidades disponíveis.';
+        });
+
+        inputQuantidade.addEventListener('input', function () {
+            const limite = Number(inputQuantidade.max || 0);
+            const valor = Number(inputQuantidade.value);
+            if (limite > 0 && valor > limite) inputQuantidade.value = limite;
+            if (valor < 1 && inputQuantidade.value !== '') inputQuantidade.value = 1;
         });
 
         formServico.addEventListener('submit', function (event) {

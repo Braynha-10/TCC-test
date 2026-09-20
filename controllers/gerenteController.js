@@ -73,7 +73,15 @@ const atualizarMecanico = async(req,res) => {
     try {
         const mecanico = await Mecanico.findByPk(id);
         if (!mecanico) {
-            Mecanico.create({nome, telefone, email, senha, salario, comissao, especialidade});
+            setAlert(req, res, 'error', 'Mecânico não encontrado', 'O registro informado não existe.');
+            return res.redirect('/gerente/mecanico/listar');
+        }
+        const mecanicoExistente = await Mecanico.findOne({
+            where: { email, id: { [Op.ne]: id } }
+        });
+        if (mecanicoExistente) {
+            setAlert(req, res, 'error', 'Mecânico já cadastrado', 'Já existe outro mecânico com este e-mail.');
+            return res.redirect(`/gerente/mecanico/editar/${id}`);
         }
         await mecanico.update({nome, telefone, email, senha, salario, comissao, especialidade});
         setAlert(req, res, 'success', 'Mecânico atualizado', 'As informações do mecânico foram atualizadas.');
@@ -102,6 +110,11 @@ const deletarMecanico = async (req, res) => {
 const cadastrarPeca = async (req, res) => {
     try {
         const { nome, descricao, preco, quantidade, capacidade } = req.body;
+        const pecaExistente = await Peca.findOne({ where: { nome } });
+        if (pecaExistente) {
+            setAlert(req, res, 'error', 'Peça já cadastrada', 'Já existe uma peça com este nome.');
+            return res.redirect('/gerente/pecas/cadastro');
+        }
 
         // 1️⃣ Criar a Peça
         const novaPeca = await Peca.create({
@@ -194,7 +207,15 @@ const modificaPeca = async(req,res) => {
     try {
         const peca = await Peca.findByPk(id);
         if (!peca) {
-            res.status(404).json({error: "peca nao encontrada!"})
+            setAlert(req, res, 'error', 'Peça não encontrada', 'O registro informado não existe.');
+            return res.redirect('/gerente/pecas/listar');
+        }
+        const pecaExistente = await Peca.findOne({
+            where: { nome, id: { [Op.ne]: id } }
+        });
+        if (pecaExistente) {
+            setAlert(req, res, 'error', 'Peça já cadastrada', 'Já existe outra peça com este nome.');
+            return res.redirect(`/gerente/pecas/modifica/${id}`);
         }
         await peca.update({nome, descricao, preco});
         setAlert(req, res, 'success', 'Peça atualizada', 'As informações da peça foram atualizadas.');
@@ -617,7 +638,15 @@ const atualizarGerente = async(req,res) => {
     try {
         const gerente = await Gerente.findByPk(id);
         if (!gerente) {
-            res.status(404).json({error: "Gerente nao encontrado!"})
+            setAlert(req, res, 'error', 'Gerente não encontrado', 'O registro informado não existe.');
+            return res.redirect('/gerente/gerentes/listar');
+        }
+        const gerenteExistente = await Gerente.findOne({
+            where: { email, id: { [Op.ne]: id } }
+        });
+        if (gerenteExistente) {
+            setAlert(req, res, 'error', 'Gerente já cadastrado', 'Já existe outro gerente com este e-mail.');
+            return res.redirect(`/gerente/gerentes/editar/${id}`);
         }
         await gerente.update({nome, telefone, email, senha, salario});
         setAlert(req, res, 'success', 'Gerente atualizado', 'As informações do gerente foram atualizadas.');
@@ -931,7 +960,7 @@ const processarSolicitacaoServicos = async (req, res) => {
         status: 'Pendente',
       }, { transaction });
 
-      // Se havia peça vinculada, reduz do estoque (usando transaction)
+            // Na aprovação apenas valida o saldo; o consumo ocorre na finalização.
       if (solicitacaoServico.id_peca) {
         const pecaEstoque = await Estoque.findOne({
           where: { produtoId: solicitacaoServico.id_peca },
@@ -946,10 +975,6 @@ const processarSolicitacaoServicos = async (req, res) => {
         if (pecaEstoque.quantidade < quantidadeSolicitada) {
           throw new Error('Quantidade insuficiente no estoque');
         }
-
-        pecaEstoque.quantidade -= quantidadeSolicitada;
-
-        await pecaEstoque.save({ transaction });
       }
 
       solicitacaoServico.status = 'APROVADO';

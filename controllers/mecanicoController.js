@@ -75,6 +75,14 @@ exports.cadastroVeiculo = async(req, res) => {
     try {
         // Recupere os dados do mecânico da sessão
         const mecanico = req.session.mecanico;
+        const veiculoExistente = await Veiculo.findOne({
+            where: { modelo, marca, ano, id_cliente }
+        });
+        if (veiculoExistente) {
+            setAlert(req, res, 'error', 'Veículo já cadastrado', 'Este veículo já está vinculado a este cliente.');
+            return res.status(409).render('mecanico/painelMecanico', {mecanico});
+        }
+
         // Salvar no banco de dados
         await Veiculo.create({  modelo, marca, ano, id_cliente });
         setAlert(req, res, 'success', 'Veículo cadastrado', 'O veículo foi cadastrado com sucesso.');
@@ -128,6 +136,14 @@ exports.atualizandoVeiculo = async(req, res) => {
     try {
         // Recupere os dados do mecânico da sessão
         const mecanico = req.session.mecanico;
+        const veiculoExistente = await Veiculo.findOne({
+            where: { modelo, marca, ano, id_cliente, id: { [Op.ne]: id } }
+        });
+        if (veiculoExistente) {
+            setAlert(req, res, 'error', 'Veículo já cadastrado', 'Já existe outro veículo igual vinculado a este cliente.');
+            return res.redirect('/mecanico/painelMecanico');
+        }
+
         await Veiculo.update({ modelo, marca, ano, id_cliente }, { where: { id } });
         setAlert(req, res, 'success', 'Veículo atualizado', 'As informações do veículo foram atualizadas.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
@@ -209,6 +225,18 @@ exports.cadastroCliente = async(req, res) => {
     try {
         // Recupere os dados do mecânico da sessão
         const mecanico = req.session.mecanico;
+        const criteriosDuplicidade = [];
+        if (email && email.trim()) criteriosDuplicidade.push({ email: email.trim() });
+        if (nome && telefone) criteriosDuplicidade.push({ nome: nome.trim(), telefone });
+
+        if (criteriosDuplicidade.length) {
+            const clienteExistente = await Cliente.findOne({ where: { [Op.or]: criteriosDuplicidade } });
+            if (clienteExistente) {
+                setAlert(req, res, 'error', 'Cliente já cadastrado', 'Já existe um cliente com este e-mail ou telefone.');
+                return res.status(409).render('mecanico/painelMecanico', {mecanico});
+            }
+        }
+
         // Salvar no banco de dados
         await Cliente.create({  nome, telefone, email, endereco  });
         setAlert(req, res, 'success', 'Cliente cadastrado', 'O cliente foi cadastrado com sucesso.');
@@ -237,6 +265,19 @@ exports.atualizandoCliente = async(req, res) => {
     const { nome, telefone, email } = req.body;
 
     try {
+        const criteriosDuplicidade = [];
+        if (email && email.trim()) criteriosDuplicidade.push({ email: email.trim() });
+        if (nome && telefone) criteriosDuplicidade.push({ nome: nome.trim(), telefone });
+        if (criteriosDuplicidade.length) {
+            const clienteExistente = await Cliente.findOne({
+                where: { [Op.or]: criteriosDuplicidade, id: { [Op.ne]: id } }
+            });
+            if (clienteExistente) {
+                setAlert(req, res, 'error', 'Cliente já cadastrado', 'Já existe outro cliente com este e-mail ou telefone.');
+                return res.redirect('/mecanico/painelMecanico');
+            }
+        }
+
         await Cliente.update({ nome, telefone, email }, { where: { id } });
         setAlert(req, res, 'success', 'Cliente atualizado', 'As informações do cliente foram atualizadas.');
         res.redirect('/mecanico/painelMecanico');  // Redireciona para painel do mecanico
@@ -323,16 +364,44 @@ exports.listarServicosEmAndamento = async (req, res) => {
 
 exports.finalizarServicosEmAndamento = async(req, res) => {
     const {id} = req.params;
+    const transaction = await sequelize.transaction();
     try {
-        const servico = await Servico.findByPk(id);
+        const servico = await Servico.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
         if(!servico){
-            return res.status(404).send('Servico nao encontrado!');
+            await transaction.rollback();
+            setAlert(req, res, 'error', 'Serviço não encontrado', 'O serviço informado não existe.');
+            return res.redirect('/mecanico/servico/listarServicos');
         }
-        await servico.update({status: "Finalizado"})
+
+        if (servico.status === 'Finalizado') {
+            await transaction.rollback();
+            setAlert(req, res, 'info', 'Serviço já finalizado', 'O estoque não foi alterado novamente.');
+            return res.redirect('/mecanico/servico/listarServicos');
+        }
+
+        if (servico.id_peca && servico.quantidade > 0) {
+            const estoque = await Estoque.findOne({
+                where: { produtoId: servico.id_peca },
+                transaction,
+                lock: transaction.LOCK.UPDATE
+            });
+
+            if (!estoque || estoque.quantidade < servico.quantidade) {
+                await transaction.rollback();
+                setAlert(req, res, 'error', 'Estoque insuficiente', 'Não é possível finalizar o serviço com o saldo atual.');
+                return res.redirect('/mecanico/servico/listarServicos');
+            }
+
+            estoque.quantidade -= servico.quantidade;
+            await estoque.save({ transaction });
+        }
+
+        await servico.update({status: "Finalizado"}, { transaction });
+        await transaction.commit();
         setAlert(req, res, 'success', 'Serviço finalizado', 'O serviço foi marcado como finalizado.');
         res.redirect('/mecanico/servico/listarServicos')
     } catch (error) {
-    
+        try { await transaction.rollback(); } catch (rollbackError) { /* transação já encerrada */ }
         console.error('Erro ao atualizar Servico: ', error);
         setAlert(req, res, 'error', 'Não foi possível finalizar o serviço', 'Tente novamente em instantes.');
         res.redirect('/mecanico/servico/listarServicos');
@@ -465,10 +534,27 @@ exports.solicitarServico = async(req, res) => {
     const quantidadeNumerica = Number(quantidade);
 
     if (!Number.isInteger(quantidadeNumerica) || quantidadeNumerica < 1) {
-        return res.status(400).send('Quantidade inválida');
+        setAlert(req, res, 'error', 'Quantidade inválida', 'Informe uma quantidade inteira maior que zero.');
+        return res.status(400).render('mecanico/painelMecanico', {mecanico});
     }
 
     try {
+        if (!id_peca) {
+            setAlert(req, res, 'error', 'Peça obrigatória', 'Selecione uma peça para o serviço.');
+            return res.status(400).render('mecanico/painelMecanico', {mecanico});
+        }
+
+        const peca = await Peca.findByPk(id_peca, { include: Estoque });
+        if (!peca || !peca.Estoque) {
+            setAlert(req, res, 'error', 'Peça indisponível', 'A peça selecionada não possui estoque disponível.');
+            return res.status(400).render('mecanico/painelMecanico', {mecanico});
+        }
+
+        if (quantidadeNumerica > peca.Estoque.quantidade) {
+            setAlert(req, res, 'error', 'Estoque insuficiente', `Há somente ${peca.Estoque.quantidade} unidade(s) disponíveis.`);
+            return res.status(400).render('mecanico/painelMecanico', {mecanico});
+        }
+
         await Solicitacoes_servico.create({
             id_mecanico,
             id_veiculo,

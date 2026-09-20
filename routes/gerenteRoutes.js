@@ -85,16 +85,18 @@ router.post('/mecanico/cadastro', async (req,res) => {
     const {nome, email, telefone, senha, especialidade, salario, comissao} = req.body;
     const gerente = req.session.gerente;
 
-    const user = await Mecanico.findOne({
-        where: {email: email}
-    });
-
-    if(!user){
-        await Mecanico.create({nome, email, telefone, senha, especialidade, salario, comissao})
+    try {
+        const user = await Mecanico.findOne({ where: { email } });
+        if(user){
+            setAlert(req, res, 'error', 'Mecânico já cadastrado', 'Já existe um mecânico com esse e-mail.');
+            return res.redirect('/gerente/mecanico/cadastro');
+        }
+        await Mecanico.create({nome, email, telefone, senha, especialidade, salario, comissao});
         setAlert(req, res, 'success', 'Mecânico cadastrado', 'O mecânico foi cadastrado com sucesso.');
         res.redirect('/gerente/painelGerente');
-    } else {
-        setAlert(req, res, 'error', 'Mecânico já cadastrado', 'Já existe um mecânico com esse e-mail.');
+    } catch (error) {
+        console.error('Erro ao cadastrar mecânico:', error);
+        setAlert(req, res, 'error', 'Não foi possível cadastrar o mecânico', 'Confira os dados e tente novamente.');
         res.redirect('/gerente/mecanico/cadastro');
     }
 
