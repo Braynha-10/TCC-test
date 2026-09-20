@@ -1,5 +1,3 @@
-const { Solicitacoes_peca, Pecas, sequelize } = require('./index');
-
 module.exports = (sequelize, DataTypes) => {
   const Estoque = sequelize.define(
     "Estoque",

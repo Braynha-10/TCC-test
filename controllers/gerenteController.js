@@ -1,5 +1,4 @@
 const { Mecanico, Peca, Servico, Veiculo, Pagamento, Catalogo, Gerente, Cliente, Solicitacoes_peca, Solicitacoes_servico, Estoque, sequelize } = require('../models');
-const { get } = require('../routes/gerenteRoutes');
 const { Op, Sequelize } = require("sequelize");
 const PDFDocument = require('pdfkit');
 const { listarSolitacoesPecas } = require('./mecanicoController');

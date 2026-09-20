@@ -3,6 +3,29 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
+    const duplicateChecks = [
+      ['clientes', ['email']],
+      ['clientes', ['nome', 'telefone']],
+      ['veiculos', ['modelo', 'marca', 'ano', 'id_cliente']],
+      ['mecanicos', ['email']],
+      ['pecas', ['nome']],
+      ['gerentes', ['email']]
+    ];
+
+    for (const [table, columns] of duplicateChecks) {
+      const columnList = columns.map(column => `\`${column}\``).join(', ');
+      const [duplicates] = await queryInterface.sequelize.query(
+        `SELECT ${columnList}, COUNT(*) AS total FROM \`${table}\` GROUP BY ${columnList} HAVING COUNT(*) > 1 LIMIT 5`
+      );
+
+      if (duplicates.length > 0) {
+        throw new Error(
+          `Não foi possível criar a regra de duplicidade em ${table} (${columns.join(', ')}). ` +
+          `Existem registros repetidos: ${JSON.stringify(duplicates)}`
+        );
+      }
+    }
+
     await queryInterface.addIndex('clientes', ['email'], {
       unique: true,
       name: 'clientes_email_unique'

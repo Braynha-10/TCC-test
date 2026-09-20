@@ -127,7 +127,7 @@
 
     function openFinalizeModal(servicoId) {
       // Ajuste a action conforme sua rota de finalização (mantive o padrão que você usava)
-      finalizeForm.action = `/mecanico/servico/listarServicos/FinalizarServico/${servicoId}?_method=PATCH`;
+      finalizeForm.action = `/mecanico/servico/listarServicos/finalizarServico/${servicoId}?_method=PATCH`;
       bootstrapModal.show();
     }
   </script>
