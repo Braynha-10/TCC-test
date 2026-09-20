@@ -14,14 +14,22 @@ const gerenteController = require('../controllers/gerenteController');
 // });
 
 router.get('/', (req, res) => {
-    const {gerente} =  req.session.gerente;
-    res.render('gerente/loginGerente', {gerente});
+    if (req.session.gerente) {
+        return res.redirect('/gerente/painelGerente');
+    }
+    res.render('gerente/loginGerente');
 });
 
 
 router.post('/', async (req, res) => {
     const { email, senha } = req.body;
-    console.log('Requisição recebida:', req.body);
+
+    if (!email || !senha) {
+        return res.status(400).render('gerente/loginGerente', {
+            error: 'Informe seu e-mail e sua senha para entrar.',
+            email
+        });
+    }
     
     try {
         // Verifique as credenciais no banco de dados
@@ -29,7 +37,10 @@ router.post('/', async (req, res) => {
         
         //confere e covalida a senha encriptografada 
         if (!gerente || !bcrypt.compareSync(senha, gerente.senha)) {
-            return res.status(401).render('gerente/loginGerente', { error: 'Credenciais inválidas' });
+            return res.status(401).render('gerente/loginGerente', {
+                error: 'E-mail ou senha inválidos. Confira os dados e tente novamente.',
+                email
+            });
         }
         
         // Salva o gerente na sessão
@@ -39,8 +50,12 @@ router.post('/', async (req, res) => {
             nome: gerente.nome,
         };
         
-        // Renderiza o painel do gerente
-        res.render('gerente/painelGerente', { gerente });
+        req.session.alert = {
+            type: 'success',
+            title: 'Login realizado',
+            message: 'Bem-vindo ao painel do gerente.'
+        };
+        res.redirect('/gerente/painelGerente');
     } catch (error) {
         console.error(error);
         res.status(500).send('Erro interno do servidor');

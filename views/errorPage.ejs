@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Error</title>
+    <title>Acesso não autorizado</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
-    <script src='main.js'></script>
+    <link rel="stylesheet" href="/public/login.css">
 </head>
 <body>
-    <h1>Erro de autenticação</h1>
-    <h3>Ops! parece que voce quer acessar paginas e ainda não possui permissões para isso ou seu tempo de login expirou :C</h3>
-    <h3>tente realizar o login para solucionar</h3>
-    <br>
-    <a href="/login"><button>Login</button></a>
+    <main class="access-error" role="alert">
+        <div class="status-icon" aria-hidden="true">!</div>
+        <p class="status-code"><%= typeof statusCode !== 'undefined' ? statusCode : 401 %></p>
+        <h1>Acesso não autorizado</h1>
+        <p><%= typeof message !== 'undefined' ? message : 'Você precisa entrar para acessar esta página.' %></p>
+        <a class="botao" href="<%= typeof loginPath !== 'undefined' ? loginPath : '/login' %>">Ir para o login</a>
+    </main>
 </body>
 </html>

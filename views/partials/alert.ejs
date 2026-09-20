@@ -1,0 +1,11 @@
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert-box alert-error" role="alert" aria-live="polite">
+        <strong>Não foi possível continuar.</strong>
+        <span><%= error %></span>
+    </div>
+<% } else if (typeof alert !== 'undefined' && alert) { %>
+    <div class="alert-box alert-<%= alert.type || 'info' %>" role="status" aria-live="polite">
+        <strong><%= alert.title || 'Aviso' %></strong>
+        <span><%= alert.message %></span>
+    </div>
+<% } %>

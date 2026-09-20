@@ -26,19 +26,30 @@ const { homeVeiculo,listandoVeiculos, listarServicosEmAndamento, finalizarServic
 // });
 
 router.get('/', (req, res) => {
+    if (req.session.mecanico) {
+        return res.redirect('/mecanico/painelMecanico');
+    }
     res.render('mecanico/loginMecanico');
 });
 
 router.post('/', async (req, res) => {
     const { email, senha } = req.body;
-    console.log('Requisição recebida:', req.body);
+    if (!email || !senha) {
+        return res.status(400).render('mecanico/loginMecanico', {
+            error: 'Informe seu e-mail e sua senha para entrar.',
+            email
+        });
+    }
 
     try {
         // Verifique as credenciais no banco de dados
         const mecanico = await Mecanico.findOne({ where: { email } });
 
         if (!mecanico || !bcrypt.compareSync(senha, mecanico.senha)) {
-            return res.status(401).render('mecanico/loginMecanico', { error: 'Credenciais inválidas' });
+            return res.status(401).render('mecanico/loginMecanico', {
+                error: 'E-mail ou senha inválidos. Confira os dados e tente novamente.',
+                email
+            });
         }
 
         // Salva o mecânico na sessão
@@ -48,8 +59,12 @@ router.post('/', async (req, res) => {
             nome: mecanico.nome,
         };
 
-        // Renderiza o painel do mecânico
-        res.render('mecanico/painelMecanico', { mecanico });
+        req.session.alert = {
+            type: 'success',
+            title: 'Login realizado',
+            message: 'Bem-vindo ao painel do mecânico.'
+        };
+        res.redirect('/mecanico/painelMecanico');
     } catch (error) {
         console.error(error);
         res.status(500).send('Erro interno do servidor');

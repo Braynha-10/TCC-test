@@ -41,6 +41,12 @@ app.use(
     })
 );
 
+app.use((req, res, next) => {
+    res.locals.alert = req.session.alert;
+    delete req.session.alert;
+    next();
+});
+
 // Sincroniza a tabela de sessões no banco de dados
 sessionStore.sync();
 
