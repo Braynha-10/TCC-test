@@ -36,6 +36,24 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+button:not(.btn-close) {
+  color: #ffffff;
+}
+
+.btn-secondary {
+  color: #18324b;
+  background-color: #ffffff;
+  border-color: #c8d8dc;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+  color: #18324b;
+  background-color: #eef5f5;
+  border-color: #087f8c;
+}
+
 .disabled {
   background-color: #ccc; 
   color: #666; 
@@ -88,10 +106,10 @@ tbody tr:hover {
 
 .botao {
   display: inline-block; /* Permite ajustar padding e dimensões */
-  color: #000000; /* Cor do texto */
+  color: #ffffff; /* Cor do texto */
   padding: 10px 20px; /* Espaçamento interno do botão */
   font-size: 16px; /* Tamanho da fonte */
-  color: #000000; /* Cor do texto */
+  color: #ffffff; /* Cor do texto */
   background-color: #677288; /* Cor do fundo (azul) */
   text-decoration: none; /* Remove o sublinhado do link */
   border: none; /* Remove borda padrão */
@@ -102,14 +120,14 @@ tbody tr:hover {
 
 .botao:hover {
   background-color: #b1b8af; /* Fundo mais escuro ao passar o mouse */
-  color: #000000; /* Cor do texto */
+  color: #ffffff; /* Cor do texto */
   box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2); /* Aumenta a sombra */
   text-decoration: none; /* Remove sublinhado */
 }
 
 .botao:active {
   background-color: #f1f1f1; /* Fundo ainda mais escuro ao clicar */
-  color: #000000; /* Cor do texto */
+  color: #ffffff; /* Cor do texto */
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra reduzida */
   text-decoration: none; /* Remove sublinhado */
 }

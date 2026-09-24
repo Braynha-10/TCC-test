@@ -47,7 +47,7 @@ h1 {
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  color: var(--painel-ink);
+  color: #ffffff;
   padding: 0.75rem 1.25rem;
   font-size: 1rem;
   font-weight: 700;
@@ -114,9 +114,9 @@ h1 {
   width: min(100%, 560px);
   text-align: center;
   overflow-wrap: anywhere;
-  color: var(--painel-ink);
-  background: #eef5f5;
-  border: 1px solid #c8dfe1;
+  color: #ffffff;
+  background: var(--painel-accent);
+  border: 1px solid var(--painel-accent);
   border-radius: 9px;
   font-size: 1rem;
   font-weight: 600;
