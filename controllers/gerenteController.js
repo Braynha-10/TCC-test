@@ -4,6 +4,27 @@ const PDFDocument = require('pdfkit');
 const { listarSolitacoesPecas } = require('./mecanicoController');
 const { setAlert } = require('../utils/alerts');
 
+const ESPECIALIDADES_MECANICO = [
+    'Retifica',
+    'Suspensão e Direção',
+    'Elétrica Automotiva',
+    'Motor e Injeção',
+    'Freios',
+    'Ar-Condicionado',
+    'Funilaria e Pintura',
+    'Diagnóstico Automotivo'
+];
+
+const formatarDataRelatorio = data => data
+    ? new Date(data).toLocaleDateString('pt-BR')
+    : '-';
+
+const escreverMarcaRelatorio = doc => {
+    doc.fillColor('#087f8c').fontSize(18).font('Helvetica-Bold').text('OFICINA MECANICA', { align: 'center' });
+    doc.fillColor('#000000').font('Helvetica').moveDown(0.4);
+    doc.moveTo(40, doc.y).lineTo(555, doc.y).strokeColor('#087f8c').stroke();
+    doc.moveDown(1);
+};
 
 
 
@@ -58,7 +79,7 @@ const getEditarMecanico = async(req, res) => {
             return res.status(404).send('Mecanico nao encontrado!');
         }
         
-        res.render('mecanico/cadastro', {mecanico});
+        res.render('mecanico/cadastro', { mecanico, especialidades: ESPECIALIDADES_MECANICO });
     } catch (error){
         console.error('Erro ao buscar mecanico: ', error);
         res.status(500).json({error: 'Erro ao buscar mecanico'});
@@ -70,6 +91,10 @@ const atualizarMecanico = async(req,res) => {
     const {nome, telefone, email, senha, salario, comissao, especialidade} = req.body;
 
     try {
+        if (!ESPECIALIDADES_MECANICO.includes(especialidade)) {
+            setAlert(req, res, 'error', 'Especialidade inválida', 'Selecione uma especialidade disponível.');
+            return res.redirect(`/gerente/mecanico/editar/${id}`);
+        }
         const mecanico = await Mecanico.findByPk(id);
         if (!mecanico) {
             setAlert(req, res, 'error', 'Mecânico não encontrado', 'O registro informado não existe.');
@@ -84,11 +109,11 @@ const atualizarMecanico = async(req,res) => {
         }
         await mecanico.update({nome, telefone, email, senha, salario, comissao, especialidade});
         setAlert(req, res, 'success', 'Mecânico atualizado', 'As informações do mecânico foram atualizadas.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/mecanico/listar');
     } catch (error){
         console.error('Erro ao atualizar mecânico: ', error);
         setAlert(req, res, 'error', 'Não foi possível atualizar o mecânico', 'Tente novamente em instantes.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/mecanico/listar');
     }
 }
 
@@ -218,11 +243,11 @@ const modificaPeca = async(req,res) => {
         }
         await peca.update({nome, descricao, preco});
         setAlert(req, res, 'success', 'Peça atualizada', 'As informações da peça foram atualizadas.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/pecas/listar');
     } catch (error){
         console.error('Erro ao atualizar peca: ', error);
         setAlert(req, res, 'error', 'Não foi possível atualizar a peça', 'Tente novamente em instantes.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/pecas/listar');
     }
 }
 
@@ -326,6 +351,7 @@ const ordemServico = async (req, res) => {
         // =========================================
         // CABEÇALHO
         // =========================================
+        escreverMarcaRelatorio(doc);
         doc.fontSize(20).text("Ordem de Serviço", { align: "center" });
         doc.fontSize(14).text(`Relatório: ${tipo.toUpperCase()}`, { align: "center" });
         doc.moveDown(2);
@@ -337,6 +363,7 @@ const ordemServico = async (req, res) => {
         doc.moveDown();
 
         doc.fontSize(12).text(`ID do Serviço: ${servico.id}`);
+        doc.text(`Data do serviço: ${formatarDataRelatorio(servico.createdAt)}`);
         doc.text(`Descrição: ${servico.descricao}`);
         doc.text(`Status: ${servico.status}`);
         doc.moveDown();
@@ -435,6 +462,14 @@ const fechamentoGeral = async (req, res) => {
         const dataInicio = req.query.dataInicio || null;
         const dataFim = req.query.dataFim || null;
 
+        const dataValida = data => /^\d{4}-\d{2}-\d{2}$/.test(data);
+        if ((dataInicio && !dataValida(dataInicio)) || (dataFim && !dataValida(dataFim))) {
+            return res.status(400).send('Informe datas válidas para o relatório.');
+        }
+        if (dataInicio && dataFim && dataFim < dataInicio) {
+            return res.status(400).send('A data final não pode ser anterior à data inicial.');
+        }
+
         if (dataInicio && dataFim) {
             whereClause.createdAt = {
                 [Op.between]: [dataInicio + " 00:00:00", dataFim + " 23:59:59"]
@@ -473,6 +508,7 @@ const fechamentoGeral = async (req, res) => {
         // ===============================
         // HEADER DO PDF
         // ===============================
+        escreverMarcaRelatorio(doc);
         doc.fontSize(22).text("Fechamento Geral - Oficina", { align: "center" });
         doc.fontSize(14).text(`Relatório: ${tipo.toUpperCase()}`, { align: "center" });
         doc.moveDown();
@@ -492,6 +528,7 @@ const fechamentoGeral = async (req, res) => {
                 doc.moveDown(0.5);
 
                 doc.fontSize(12).text(`Mecânico: ${s.Mecanico.nome}`);
+                doc.text(`Data do serviço: ${formatarDataRelatorio(s.createdAt)}`);
                 doc.text(`Cliente: ${s.Veiculo.Cliente.nome}`);
                 doc.text(`Veículo: ${s.Veiculo.modelo}`);
                 doc.text(`Serviço: ${s.Catalogo.nome}`);
@@ -512,7 +549,7 @@ const fechamentoGeral = async (req, res) => {
         if (tipo === "simples") {
             servicos.forEach(s => {
                 doc.text(
-                    `#${s.id} - ${s.Catalogo.nome} | Mecânico: ${s.Mecanico.nome} | Cliente: ${s.Veiculo.Cliente.nome}`
+                    `#${s.id} - ${s.Catalogo.nome} | Data: ${formatarDataRelatorio(s.createdAt)} | Mecânico: ${s.Mecanico.nome} | Cliente: ${s.Veiculo.Cliente.nome}`
                 );
                 doc.moveDown(0.5);
             });
@@ -528,10 +565,10 @@ const fechamentoGeral = async (req, res) => {
                 if (s.Pagamento) {
                     total += s.Pagamento.valor;
                     doc.text(
-                        `Serviço ${s.id} | Valor: R$ ${s.Pagamento.valor.toFixed(2)}`
+                        `Serviço ${s.id} | Data: ${formatarDataRelatorio(s.createdAt)} | Valor: R$ ${s.Pagamento.valor.toFixed(2)}`
                     );
                 } else {
-                    doc.text(`Serviço ${s.id} | Sem pagamento registrado`);
+                    doc.text(`Serviço ${s.id} | Data: ${formatarDataRelatorio(s.createdAt)} | Sem pagamento registrado`);
                 }
                 doc.moveDown(0.5);
             });
@@ -560,7 +597,7 @@ const fechamentoGeral = async (req, res) => {
 
                 grupos[mecanico].forEach(s => {
                     doc.fontSize(12).text(
-                        `Serviço ${s.id} | ${s.Catalogo.nome} | Cliente: ${s.Veiculo.Cliente.nome}`
+                        `Serviço ${s.id} | Data: ${formatarDataRelatorio(s.createdAt)} | ${s.Catalogo.nome} | Cliente: ${s.Veiculo.Cliente.nome}`
                     );
                 });
 
@@ -605,7 +642,7 @@ const cadastrarGerente = async (req, res) => {
         if(!user){
             await Gerente.create({nome, telefone, email, salario, senha});
             setAlert(req, res, 'success', 'Gerente cadastrado', 'O gerente foi cadastrado com sucesso.');
-            res.redirect('/gerente/painelGerente');
+            res.redirect('/gerente/gerentes/listar');
         } else {
             setAlert(req, res, 'error', 'Gerente já cadastrado', 'Já existe um gerente com esse e-mail.');
             res.redirect('/gerente/gerentes/cadastro');
@@ -649,11 +686,11 @@ const atualizarGerente = async(req,res) => {
         }
         await gerente.update({nome, telefone, email, senha, salario});
         setAlert(req, res, 'success', 'Gerente atualizado', 'As informações do gerente foram atualizadas.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/gerentes/listar');
     } catch (error){
         console.error('Erro ao atualizar gerente: ', error);
         setAlert(req, res, 'error', 'Não foi possível atualizar o gerente', 'Tente novamente em instantes.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/gerentes/listar');
     }
 }
 

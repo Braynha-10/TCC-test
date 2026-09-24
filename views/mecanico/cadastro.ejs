@@ -50,8 +50,14 @@
                     <!-- Especialidade -->
                     <div class="mb-3">
                         <label for="especialidade" class="form-label">Especialidade:</label>
-                        <input type="text" name="especialidade" id="especialidade" class="form-control" 
-                               value="<%= mecanico ? mecanico.especialidade : "" %>" required>
+                        <select name="especialidade" id="especialidade" class="form-control" required>
+                            <option value="" disabled <%= mecanico ? '' : 'selected' %>>Selecione uma especialidade</option>
+                            <% (especialidades || []).forEach(especialidade => { %>
+                                <option value="<%= especialidade %>" <%= mecanico && mecanico.especialidade === especialidade ? 'selected' : '' %>>
+                                    <%= especialidade %>
+                                </option>
+                            <% }) %>
+                        </select>
                     </div>
                     
                     <!-- Salário -->

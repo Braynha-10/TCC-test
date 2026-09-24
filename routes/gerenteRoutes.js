@@ -74,7 +74,19 @@ router.get('/painelGerente', (req, res) => {
 
 //Rotas Controle do Mecanico
 router.get('/mecanico/cadastro', async (req, res) => {
-    res.render('mecanico/cadastro', {mecanico: null}); 
+    res.render('mecanico/cadastro', {
+        mecanico: null,
+        especialidades: [
+            'Retifica',
+            'Suspensão e Direção',
+            'Elétrica Automotiva',
+            'Motor e Injeção',
+            'Freios',
+            'Ar-Condicionado',
+            'Funilaria e Pintura',
+            'Diagnóstico Automotivo'
+        ]
+    });
 });
 
 router.get('/mecanico/editar/:id', gerenteController.getEditarMecanico);
@@ -84,8 +96,22 @@ router.delete('/mecanicos/:id', gerenteController.deletarMecanico);
 router.post('/mecanico/cadastro', async (req,res) => {
     const {nome, email, telefone, senha, especialidade, salario, comissao} = req.body;
     const gerente = req.session.gerente;
+    const especialidades = [
+        'Retifica',
+        'Suspensão e Direção',
+        'Elétrica Automotiva',
+        'Motor e Injeção',
+        'Freios',
+        'Ar-Condicionado',
+        'Funilaria e Pintura',
+        'Diagnóstico Automotivo'
+    ];
 
     try {
+        if (!especialidades.includes(especialidade)) {
+            setAlert(req, res, 'error', 'Especialidade inválida', 'Selecione uma especialidade disponível.');
+            return res.redirect('/gerente/mecanico/cadastro');
+        }
         const user = await Mecanico.findOne({ where: { email } });
         if(user){
             setAlert(req, res, 'error', 'Mecânico já cadastrado', 'Já existe um mecânico com esse e-mail.');
@@ -93,7 +119,7 @@ router.post('/mecanico/cadastro', async (req,res) => {
         }
         await Mecanico.create({nome, email, telefone, senha, especialidade, salario, comissao});
         setAlert(req, res, 'success', 'Mecânico cadastrado', 'O mecânico foi cadastrado com sucesso.');
-        res.redirect('/gerente/painelGerente');
+        res.redirect('/gerente/mecanico/listar');
     } catch (error) {
         console.error('Erro ao cadastrar mecânico:', error);
         setAlert(req, res, 'error', 'Não foi possível cadastrar o mecânico', 'Confira os dados e tente novamente.');

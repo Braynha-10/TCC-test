@@ -313,6 +313,12 @@
       return;
     }
 
+    if (fim < inicio) {
+      alert("A data final não pode ser anterior à data inicial.");
+      document.getElementById("dataFim").focus();
+      return;
+    }
+
     // Monta a URL do relatório com filtros
     const url = `/gerente/fechamento-geral?tipo=${tipoRelatorioSelecionado}&dataInicio=${inicio}&dataFim=${fim}`;
 

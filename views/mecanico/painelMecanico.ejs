@@ -114,6 +114,10 @@
         const secoes = document.querySelectorAll('.secao');
         secoes.forEach(secao => secao.style.display = 'none');
 
+        document.querySelectorAll('.botao').forEach(botao => {
+            botao.classList.toggle('is-active', botao.getAttribute('onclick').includes(`'${secaoId}'`));
+        });
+
         // Mostra apenas a seção selecionada
         const secaoSelecionada = document.getElementById(secaoId);
         if (secaoSelecionada) {
